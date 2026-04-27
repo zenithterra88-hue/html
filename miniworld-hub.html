@@ -1,0 +1,1496 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini World Hub — Centro de la Comunidad</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&family=Exo+2:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --neon-green: #00ff88;
+    --neon-blue: #00cfff;
+    --neon-purple: #a855f7;
+    --neon-orange: #ff6b35;
+    --neon-yellow: #ffd700;
+    --dark-bg: #050b14;
+    --card-bg: #0a1628;
+    --card-border: #1a2f50;
+    --text-main: #e2f0ff;
+    --text-muted: #6b8baa;
+    --glow-green: 0 0 20px rgba(0,255,136,0.5);
+    --glow-blue: 0 0 20px rgba(0,207,255,0.5);
+    --glow-purple: 0 0 20px rgba(168,85,247,0.5);
+    --glow-orange: 0 0 20px rgba(255,107,53,0.5);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--dark-bg);
+    color: var(--text-main);
+    font-family: 'Exo 2', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    cursor: default;
+  }
+
+  /* Animated background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 20%, rgba(0,207,255,0.07) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(168,85,247,0.07) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 50%, rgba(0,255,136,0.04) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Grid overlay */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,207,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,207,255,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ===== NAVBAR ===== */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(5,11,20,0.92);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(0,207,255,0.2);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 70px;
+  }
+
+  .logo {
+    font-family: 'Orbitron', monospace;
+    font-weight: 900;
+    font-size: 1.4rem;
+    letter-spacing: 2px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo span.mw { color: var(--neon-blue); text-shadow: var(--glow-blue); }
+  .logo span.hub { color: var(--neon-green); text-shadow: var(--glow-green); }
+
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--neon-blue), var(--neon-green));
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    box-shadow: var(--glow-blue);
+    animation: pulse-icon 2s infinite;
+  }
+
+  @keyframes pulse-icon {
+    0%,100% { box-shadow: 0 0 10px rgba(0,207,255,0.5); }
+    50% { box-shadow: 0 0 25px rgba(0,207,255,0.9), 0 0 50px rgba(0,255,136,0.3); }
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: color 0.3s, text-shadow 0.3s;
+    padding: 4px 0;
+    position: relative;
+  }
+
+  .nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0; right: 0;
+    height: 2px;
+    background: var(--neon-blue);
+    transform: scaleX(0);
+    transition: transform 0.3s;
+    box-shadow: var(--glow-blue);
+  }
+
+  .nav-links a:hover { color: var(--neon-blue); }
+  .nav-links a:hover::after { transform: scaleX(1); }
+  .nav-links a.active { color: var(--neon-green); }
+  .nav-links a.active::after { background: var(--neon-green); transform: scaleX(1); }
+
+  .nav-btn {
+    background: linear-gradient(135deg, var(--neon-blue), var(--neon-green));
+    border: none;
+    padding: 8px 20px;
+    border-radius: 6px;
+    color: #000;
+    font-family: 'Orbitron', monospace;
+    font-weight: 700;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-transform: uppercase;
+  }
+
+  .nav-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,207,255,0.4);
+  }
+
+  /* ===== MAIN CONTENT ===== */
+  main {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ===== HERO ===== */
+  .hero {
+    padding: 80px 2rem 60px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0,255,136,0.1);
+    border: 1px solid rgba(0,255,136,0.3);
+    border-radius: 50px;
+    padding: 6px 16px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.85rem;
+    color: var(--neon-green);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    animation: fadeDown 0.8s ease;
+  }
+
+  .hero-badge::before {
+    content: '●';
+    color: var(--neon-green);
+    font-size: 0.6rem;
+    animation: blink 1.5s infinite;
+  }
+
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  @keyframes fadeDown { from{opacity:0;transform:translateY(-20px)} to{opacity:1;transform:translateY(0)} }
+
+  .hero h1 {
+    font-family: 'Orbitron', monospace;
+    font-weight: 900;
+    font-size: clamp(2.5rem, 7vw, 5rem);
+    line-height: 1.1;
+    margin-bottom: 20px;
+    animation: fadeUp 1s ease 0.2s both;
+  }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+
+  .hero h1 .line1 { color: var(--text-main); }
+  .hero h1 .line2 {
+    background: linear-gradient(90deg, var(--neon-blue), var(--neon-green));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: none;
+  }
+
+  .hero p {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin: 0 auto 40px;
+    line-height: 1.7;
+    animation: fadeUp 1s ease 0.4s both;
+  }
+
+  .hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    margin-bottom: 50px;
+    animation: fadeUp 1s ease 0.6s both;
+  }
+
+  .stat {
+    text-align: center;
+  }
+
+  .stat-num {
+    font-family: 'Orbitron', monospace;
+    font-weight: 900;
+    font-size: 1.8rem;
+    color: var(--neon-blue);
+    text-shadow: var(--glow-blue);
+  }
+
+  .stat-label {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* ===== SECTION TITLE ===== */
+  .section {
+    padding: 60px 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 36px;
+  }
+
+  .section-icon {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+
+  .section-icon.green { background: rgba(0,255,136,0.15); box-shadow: var(--glow-green); border: 1px solid rgba(0,255,136,0.3); }
+  .section-icon.blue { background: rgba(0,207,255,0.15); box-shadow: var(--glow-blue); border: 1px solid rgba(0,207,255,0.3); }
+  .section-icon.purple { background: rgba(168,85,247,0.15); box-shadow: var(--glow-purple); border: 1px solid rgba(168,85,247,0.3); }
+  .section-icon.orange { background: rgba(255,107,53,0.15); box-shadow: var(--glow-orange); border: 1px solid rgba(255,107,53,0.3); }
+
+  .section-title h2 {
+    font-family: 'Orbitron', monospace;
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: var(--text-main);
+  }
+
+  .section-title p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-family: 'Rajdhani', sans-serif;
+    letter-spacing: 0.5px;
+  }
+
+  /* ===== CARDS ===== */
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 24px;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent-color, var(--neon-blue)), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .card:hover { transform: translateY(-4px); border-color: var(--accent-color, var(--neon-blue)); }
+  .card:hover::before { opacity: 1; }
+
+  /* ===== CLANES ===== */
+  .clans-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+  }
+
+  .clan-card {
+    --accent-color: var(--neon-green);
+  }
+
+  .clan-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  .clan-avatar {
+    width: 56px; height: 56px;
+    border-radius: 14px;
+    font-size: 28px;
+    display: flex; align-items: center; justify-content: center;
+    border: 2px solid rgba(0,255,136,0.4);
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  .clan-avatar.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px; right: -2px;
+    width: 14px; height: 14px;
+    background: var(--neon-green);
+    border-radius: 50%;
+    border: 2px solid var(--dark-bg);
+    box-shadow: var(--glow-green);
+  }
+
+  .clan-name {
+    font-family: 'Orbitron', monospace;
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text-main);
+    margin-bottom: 4px;
+  }
+
+  .clan-tag {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.8rem;
+    color: var(--neon-green);
+    letter-spacing: 1px;
+  }
+
+  .clan-stats {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .clan-stat {
+    flex: 1;
+    text-align: center;
+    background: rgba(255,255,255,0.03);
+    border-radius: 10px;
+    padding: 8px;
+  }
+
+  .clan-stat-val {
+    font-family: 'Orbitron', monospace;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--neon-blue);
+  }
+
+  .clan-stat-label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+
+  .clan-desc {
+    color: var(--text-muted);
+    font-size: 0.88rem;
+    line-height: 1.5;
+    margin-bottom: 16px;
+  }
+
+  .btn {
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s;
+    width: 100%;
+  }
+
+  .btn-green {
+    background: rgba(0,255,136,0.15);
+    color: var(--neon-green);
+    border: 1px solid rgba(0,255,136,0.4);
+  }
+
+  .btn-green:hover {
+    background: rgba(0,255,136,0.25);
+    box-shadow: var(--glow-green);
+    transform: translateY(-2px);
+  }
+
+  .btn-blue {
+    background: rgba(0,207,255,0.15);
+    color: var(--neon-blue);
+    border: 1px solid rgba(0,207,255,0.4);
+  }
+
+  .btn-blue:hover {
+    background: rgba(0,207,255,0.25);
+    box-shadow: var(--glow-blue);
+    transform: translateY(-2px);
+  }
+
+  .btn-orange {
+    background: rgba(255,107,53,0.15);
+    color: var(--neon-orange);
+    border: 1px solid rgba(255,107,53,0.4);
+  }
+
+  .btn-orange:hover {
+    background: rgba(255,107,53,0.25);
+    box-shadow: var(--glow-orange);
+    transform: translateY(-2px);
+  }
+
+  .btn-purple {
+    background: rgba(168,85,247,0.15);
+    color: var(--neon-purple);
+    border: 1px solid rgba(168,85,247,0.4);
+  }
+
+  .btn-purple:hover {
+    background: rgba(168,85,247,0.25);
+    box-shadow: var(--glow-purple);
+    transform: translateY(-2px);
+  }
+
+  /* Crear clan button */
+  .create-clan-card {
+    border: 2px dashed rgba(0,255,136,0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 220px;
+    cursor: pointer;
+    transition: all 0.3s;
+    background: rgba(0,255,136,0.03);
+  }
+
+  .create-clan-card:hover {
+    border-color: var(--neon-green);
+    background: rgba(0,255,136,0.07);
+    box-shadow: var(--glow-green);
+  }
+
+  .create-clan-card .plus-icon {
+    font-size: 3rem;
+    color: var(--neon-green);
+    margin-bottom: 12px;
+    opacity: 0.7;
+  }
+
+  .create-clan-card p {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1rem;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+  }
+
+  /* ===== REPORTES ===== */
+  .report-form {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 32px;
+    --accent-color: var(--neon-orange);
+  }
+
+  .report-form:hover {
+    border-color: var(--neon-orange);
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .form-group {
+    margin-bottom: 16px;
+  }
+
+  .form-label {
+    display: block;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: var(--text-main);
+    font-family: 'Exo 2', sans-serif;
+    font-size: 0.95rem;
+    transition: all 0.3s;
+    outline: none;
+  }
+
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: var(--neon-orange);
+    box-shadow: 0 0 0 3px rgba(255,107,53,0.1);
+    background: rgba(255,107,53,0.04);
+  }
+
+  .form-select option { background: var(--card-bg); }
+
+  .form-textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+
+  .report-types {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .report-type {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    padding: 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+  }
+
+  .report-type:hover, .report-type.selected {
+    background: rgba(255,107,53,0.12);
+    border-color: var(--neon-orange);
+    color: var(--neon-orange);
+  }
+
+  .report-type .rt-icon { font-size: 1.6rem; margin-bottom: 6px; display: block; }
+
+  /* ===== MAPAS ===== */
+  .maps-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+  }
+
+  .map-card {
+    --accent-color: var(--neon-purple);
+  }
+
+  .map-thumbnail {
+    width: 100%;
+    height: 160px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .map-thumbnail::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0.6;
+  }
+
+  .map-thumb-forest { background: linear-gradient(135deg, #1a4a2e, #2d7a4f); }
+  .map-thumb-desert { background: linear-gradient(135deg, #7a4a1a, #c4842e); }
+  .map-thumb-space { background: linear-gradient(135deg, #1a1a4a, #2d2d8a); }
+  .map-thumb-ocean { background: linear-gradient(135deg, #1a2a5a, #1a5a8a); }
+
+  .map-info { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+  .map-name { font-family: 'Orbitron', monospace; font-weight: 700; font-size: 0.95rem; }
+  .map-rating { color: var(--neon-yellow); font-size: 0.85rem; font-weight: 700; }
+
+  .map-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+
+  .tag {
+    background: rgba(168,85,247,0.15);
+    border: 1px solid rgba(168,85,247,0.3);
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 0.72rem;
+    color: var(--neon-purple);
+    font-family: 'Rajdhani', sans-serif;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .map-meta {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 14px;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+  }
+
+  /* ===== RANKING ===== */
+  .ranking-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .rank-item {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: all 0.3s;
+  }
+
+  .rank-item:hover { transform: translateX(6px); border-color: var(--neon-blue); }
+  .rank-item:nth-child(1) { border-color: rgba(255,215,0,0.4); background: rgba(255,215,0,0.04); }
+  .rank-item:nth-child(2) { border-color: rgba(192,192,192,0.4); background: rgba(192,192,192,0.03); }
+  .rank-item:nth-child(3) { border-color: rgba(205,127,50,0.4); background: rgba(205,127,50,0.03); }
+
+  .rank-num {
+    font-family: 'Orbitron', monospace;
+    font-weight: 900;
+    font-size: 1.2rem;
+    min-width: 36px;
+    text-align: center;
+  }
+
+  .rank-item:nth-child(1) .rank-num { color: var(--neon-yellow); }
+  .rank-item:nth-child(2) .rank-num { color: #c0c0c0; }
+  .rank-item:nth-child(3) .rank-num { color: #cd7f32; }
+  .rank-item:nth-child(n+4) .rank-num { color: var(--text-muted); }
+
+  .rank-avatar { font-size: 2rem; }
+
+  .rank-info { flex: 1; }
+  .rank-name {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 1.05rem;
+  }
+
+  .rank-sub { font-size: 0.8rem; color: var(--text-muted); }
+
+  .rank-score {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.9rem;
+    color: var(--neon-blue);
+    text-shadow: var(--glow-blue);
+    text-align: right;
+  }
+
+  .rank-score span { display: block; font-size: 0.7rem; color: var(--text-muted); font-family: 'Exo 2', sans-serif; }
+
+  /* ===== TABS ===== */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 28px;
+    border: 1px solid var(--card-border);
+    overflow-x: auto;
+  }
+
+  .tab {
+    padding: 8px 20px;
+    border-radius: 7px;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s;
+    color: var(--text-muted);
+    border: none;
+    background: transparent;
+    white-space: nowrap;
+  }
+
+  .tab.active {
+    background: rgba(0,207,255,0.2);
+    color: var(--neon-blue);
+    box-shadow: var(--glow-blue);
+  }
+
+  .tab:hover:not(.active) {
+    color: var(--text-main);
+    background: rgba(255,255,255,0.05);
+  }
+
+  /* ===== MODAL ===== */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(10px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+
+  .modal-overlay.open {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .modal {
+    background: var(--card-bg);
+    border: 1px solid var(--neon-green);
+    border-radius: 20px;
+    padding: 36px;
+    max-width: 520px;
+    width: 90%;
+    box-shadow: 0 0 60px rgba(0,255,136,0.15);
+    transform: scale(0.9);
+    transition: transform 0.3s;
+  }
+
+  .modal-overlay.open .modal { transform: scale(1); }
+
+  .modal-title {
+    font-family: 'Orbitron', monospace;
+    font-weight: 700;
+    font-size: 1.3rem;
+    margin-bottom: 8px;
+    color: var(--neon-green);
+  }
+
+  .modal-sub {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 28px;
+  }
+
+  .modal-close {
+    position: absolute;
+    top: 16px; right: 20px;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+
+  .modal-close:hover { color: var(--text-main); }
+  .modal { position: relative; }
+
+  .emoji-picker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .emoji-opt {
+    width: 48px; height: 48px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.05);
+    border: 2px solid transparent;
+    font-size: 1.6rem;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+
+  .emoji-opt:hover, .emoji-opt.selected {
+    border-color: var(--neon-green);
+    background: rgba(0,255,136,0.1);
+  }
+
+  /* ===== TOAST ===== */
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: var(--card-bg);
+    border: 1px solid var(--neon-green);
+    border-radius: 12px;
+    padding: 16px 24px;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 8px 40px rgba(0,255,136,0.2);
+    transform: translateX(200%);
+    transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    max-width: 320px;
+  }
+
+  .toast.show { transform: translateX(0); }
+  .toast-icon { font-size: 1.5rem; }
+  .toast-msg { font-family: 'Rajdhani', sans-serif; font-weight: 600; color: var(--neon-green); }
+
+  /* ===== DIVIDER ===== */
+  .section-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--card-border), transparent);
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  /* ===== FOOTER ===== */
+  footer {
+    position: relative;
+    z-index: 1;
+    border-top: 1px solid var(--card-border);
+    padding: 40px 2rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-family: 'Rajdhani', sans-serif;
+  }
+
+  footer .footer-logo {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.1rem;
+    margin-bottom: 12px;
+  }
+
+  footer .footer-logo span { color: var(--neon-green); }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 768px) {
+    .nav-links { display: none; }
+    .form-row { grid-template-columns: 1fr; }
+    .hero-stats { gap: 1.5rem; }
+    .stat-num { font-size: 1.3rem; }
+  }
+
+  /* Floating particles */
+  .particle {
+    position: fixed;
+    width: 3px;
+    height: 3px;
+    background: var(--neon-blue);
+    border-radius: 50%;
+    opacity: 0;
+    animation: float-particle var(--dur, 8s) var(--delay, 0s) infinite linear;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  @keyframes float-particle {
+    0% { opacity: 0; transform: translateY(100vh) scale(0); }
+    10% { opacity: 0.6; }
+    90% { opacity: 0.3; }
+    100% { opacity: 0; transform: translateY(-100px) scale(1.5); }
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--dark-bg); }
+  ::-webkit-scrollbar-thumb { background: var(--card-border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--neon-blue); }
+</style>
+</head>
+<body>
+
+<!-- Floating particles -->
+<div class="particle" style="left:5%;--dur:9s;--delay:0s;background:#00ff88;"></div>
+<div class="particle" style="left:15%;--dur:11s;--delay:2s;background:#00cfff;"></div>
+<div class="particle" style="left:30%;--dur:8s;--delay:4s;background:#a855f7;"></div>
+<div class="particle" style="left:50%;--dur:13s;--delay:1s;background:#00ff88;"></div>
+<div class="particle" style="left:70%;--dur:10s;--delay:3s;background:#00cfff;"></div>
+<div class="particle" style="left:85%;--dur:7s;--delay:5s;background:#ffd700;"></div>
+<div class="particle" style="left:92%;--dur:12s;--delay:0.5s;background:#ff6b35;"></div>
+
+<!-- MODAL CREAR CLAN -->
+<div class="modal-overlay" id="clanModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-title">⚔️ Crear Nuevo Clan</div>
+    <p class="modal-sub">Funda tu clan y recluta guerreros de Mini World</p>
+
+    <div class="form-group">
+      <label class="form-label">Icono del Clan</label>
+      <div class="emoji-picker">
+        <div class="emoji-opt selected" onclick="selectEmoji(this)">⚔️</div>
+        <div class="emoji-opt" onclick="selectEmoji(this)">🛡️</div>
+        <div class="emoji-opt" onclick="selectEmoji(this)">🔥</div>
+        <div class="emoji-opt" onclick="selectEmoji(this)">⚡</div>
+        <div class="emoji-opt" onclick="selectEmoji(this)">💎</div>
+        <div class="emoji-opt" onclick="selectEmoji(this)">🐉</div>
+        <div class="emoji-opt" onclick="selectEmoji(this)">🌙</div>
+        <div class="emoji-opt" onclick="selectEmoji(this)">🌟</div>
+        <div class="emoji-opt" onclick="selectEmoji(this)">🦅</div>
+        <div class="emoji-opt" onclick="selectEmoji(this)">🐺</div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">Nombre del Clan</label>
+        <input type="text" class="form-input" placeholder="Ej: Los Invictos" id="clanName">
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">Tag [XXX]</label>
+        <input type="text" class="form-input" placeholder="INV" maxlength="4" id="clanTag">
+      </div>
+    </div>
+
+    <br>
+
+    <div class="form-group">
+      <label class="form-label">Descripción</label>
+      <textarea class="form-textarea" placeholder="Describe tu clan, requisitos para unirse..." style="min-height:80px" id="clanDesc"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Tipo de Clan</label>
+      <select class="form-select" id="clanType">
+        <option>🏆 Competitivo</option>
+        <option>🎮 Casual / Social</option>
+        <option>🗺️ Exploradores de Mapas</option>
+        <option>⚔️ PvP Élite</option>
+        <option>🌱 Principiantes</option>
+      </select>
+    </div>
+
+    <button class="btn btn-green" onclick="createClan()" style="font-size:1rem;padding:14px;">
+      ⚔️ FUNDAR CLAN
+    </button>
+  </div>
+</div>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="logo">
+    <div class="logo-icon">🌍</div>
+    <span class="mw">MINI</span><span class="hub">WORLD</span>&nbsp;HUB
+  </div>
+  <ul class="nav-links">
+    <li><a href="#clanes" class="active">Clanes</a></li>
+    <li><a href="#reportes">Reportes</a></li>
+    <li><a href="#mapas">Mapas</a></li>
+    <li><a href="#ranking">Ranking</a></li>
+  </ul>
+  <button class="nav-btn" onclick="openModal()">+ Crear Clan</button>
+</nav>
+
+<!-- HERO -->
+<main>
+<section class="hero">
+  <div class="hero-badge">🌍 Comunidad Oficial Mini World</div>
+  <h1>
+    <div class="line1">EL CENTRO DE LA</div>
+    <div class="line2">COMUNIDAD MW</div>
+  </h1>
+  <p>Únete a clanes, reporta jugadores tóxicos, descubre los mejores mapas y compite por el ranking global.</p>
+
+  <div class="hero-stats">
+    <div class="stat">
+      <div class="stat-num" id="countPlayers">0</div>
+      <div class="stat-label">Jugadores</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" id="countClans">0</div>
+      <div class="stat-label">Clanes activos</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" id="countMaps">0</div>
+      <div class="stat-label">Mapas rankeados</div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION: CLANES -->
+<div class="section-divider"></div>
+<section class="section" id="clanes">
+  <div class="section-header">
+    <div class="section-icon green">⚔️</div>
+    <div class="section-title">
+      <h2>CLANES</h2>
+      <p>Únete a un clan o funda el tuyo propio</p>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active">🔥 Populares</button>
+    <button class="tab">⚡ Nuevos</button>
+    <button class="tab">🏆 Élite</button>
+    <button class="tab">🌱 Abiertos</button>
+  </div>
+
+  <div class="clans-grid" id="clansGrid">
+
+    <!-- Crear clan placeholder -->
+    <div class="card create-clan-card" onclick="openModal()">
+      <div class="plus-icon">＋</div>
+      <p>CREAR NUEVO CLAN</p>
+    </div>
+
+    <!-- Clan 1 -->
+    <div class="card clan-card">
+      <div class="clan-header">
+        <div class="clan-avatar active" style="background:rgba(0,207,255,0.1)">🐉</div>
+        <div>
+          <div class="clan-name">Dragones de Fuego</div>
+          <div class="clan-tag">[DRF] • Competitivo</div>
+        </div>
+      </div>
+      <div class="clan-stats">
+        <div class="clan-stat"><div class="clan-stat-val">47</div><div class="clan-stat-label">Miembros</div></div>
+        <div class="clan-stat"><div class="clan-stat-val">92%</div><div class="clan-stat-label">Win Rate</div></div>
+        <div class="clan-stat"><div class="clan-stat-val">#3</div><div class="clan-stat-label">Global</div></div>
+      </div>
+      <p class="clan-desc">Clan de alto nivel. Buscamos guerreros experimentados. Torneos semanales y mucho más.</p>
+      <button class="btn btn-blue">Solicitar Ingreso</button>
+    </div>
+
+    <!-- Clan 2 -->
+    <div class="card clan-card">
+      <div class="clan-header">
+        <div class="clan-avatar active" style="background:rgba(168,85,247,0.1)">🌟</div>
+        <div>
+          <div class="clan-name">StarBuilders</div>
+          <div class="clan-tag">[SBR] • Constructores</div>
+        </div>
+      </div>
+      <div class="clan-stats">
+        <div class="clan-stat"><div class="clan-stat-val">83</div><div class="clan-stat-label">Miembros</div></div>
+        <div class="clan-stat"><div class="clan-stat-val">120</div><div class="clan-stat-label">Mapas</div></div>
+        <div class="clan-stat"><div class="clan-stat-val">#1</div><div class="clan-stat-label">Creadores</div></div>
+      </div>
+      <p class="clan-desc">El mejor clan de construcción. Si te apasionan los mapas creativos, este es tu hogar.</p>
+      <button class="btn btn-blue">Solicitar Ingreso</button>
+    </div>
+
+    <!-- Clan 3 -->
+    <div class="card clan-card">
+      <div class="clan-header">
+        <div class="clan-avatar" style="background:rgba(255,215,0,0.1)">🦅</div>
+        <div>
+          <div class="clan-name">Águilas Reales</div>
+          <div class="clan-tag">[AGR] • Casual</div>
+        </div>
+      </div>
+      <div class="clan-stats">
+        <div class="clan-stat"><div class="clan-stat-val">34</div><div class="clan-stat-label">Miembros</div></div>
+        <div class="clan-stat"><div class="clan-stat-val">75%</div><div class="clan-stat-label">Win Rate</div></div>
+        <div class="clan-stat"><div class="clan-stat-val">#12</div><div class="clan-stat-label">Global</div></div>
+      </div>
+      <p class="clan-desc">Ambiente relajado y amigable. Todos son bienvenidos, ¡aprendemos juntos!</p>
+      <button class="btn btn-green">Unirse Ahora</button>
+    </div>
+
+  </div>
+</section>
+
+<!-- SECTION: REPORTES -->
+<div class="section-divider"></div>
+<section class="section" id="reportes">
+  <div class="section-header">
+    <div class="section-icon orange">🚨</div>
+    <div class="section-title">
+      <h2>REPORTAR JUGADOR</h2>
+      <p>Ayuda a mantener la comunidad limpia y segura</p>
+    </div>
+  </div>
+
+  <div class="report-form card">
+    <p style="color:var(--text-muted);margin-bottom:20px;font-size:0.9rem;">Selecciona el motivo del reporte:</p>
+
+    <div class="report-types">
+      <div class="report-type selected" onclick="selectReport(this)">
+        <span class="rt-icon">🤬</span>Lenguaje Tóxico
+      </div>
+      <div class="report-type" onclick="selectReport(this)">
+        <span class="rt-icon">🎮</span>Trampa / Hack
+      </div>
+      <div class="report-type" onclick="selectReport(this)">
+        <span class="rt-icon">🏴‍☠️</span>Griefing
+      </div>
+      <div class="report-type" onclick="selectReport(this)">
+        <span class="rt-icon">👶</span>Acoso
+      </div>
+      <div class="report-type" onclick="selectReport(this)">
+        <span class="rt-icon">🔴</span>Bug Abuse
+      </div>
+      <div class="report-type" onclick="selectReport(this)">
+        <span class="rt-icon">❓</span>Otro</div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group" style="margin:0">
+        <label class="form-label">Nombre del jugador</label>
+        <input type="text" class="form-input" placeholder="Nickname exacto...">
+      </div>
+      <div class="form-group" style="margin:0">
+        <label class="form-label">ID del servidor</label>
+        <input type="text" class="form-input" placeholder="Ej: MW-1234567">
+      </div>
+    </div>
+
+    <br>
+
+    <div class="form-group">
+      <label class="form-label">Mapa / Sala donde ocurrió</label>
+      <input type="text" class="form-input" placeholder="Nombre del mapa o sala...">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Descripción del problema</label>
+      <textarea class="form-textarea" placeholder="Describe detalladamente lo que pasó. Cuanta más información mejor..."></textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Evidencia (link de imagen/video)</label>
+      <input type="text" class="form-input" placeholder="https://...">
+    </div>
+
+    <button class="btn btn-orange" onclick="submitReport()" style="font-size:1rem;padding:14px;">
+      🚨 ENVIAR REPORTE
+    </button>
+  </div>
+</section>
+
+<!-- SECTION: MAPAS -->
+<div class="section-divider"></div>
+<section class="section" id="mapas">
+  <div class="section-header">
+    <div class="section-icon purple">🗺️</div>
+    <div class="section-title">
+      <h2>MAPAS RECOMENDADOS</h2>
+      <p>Los mejores mapas votados por la comunidad</p>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active">⭐ Mejor Valorados</button>
+    <button class="tab">🆕 Nuevos</button>
+    <button class="tab">🔥 Tendencia</button>
+    <button class="tab">⚔️ PvP</button>
+    <button class="tab">🌱 Survival</button>
+  </div>
+
+  <div class="maps-grid">
+
+    <!-- Mapa 1 -->
+    <div class="card map-card">
+      <div class="map-thumbnail map-thumb-forest">🌲</div>
+      <div class="map-info">
+        <div class="map-name">Bosque Eterno</div>
+        <div class="map-rating">★ 4.9</div>
+      </div>
+      <div class="map-tags">
+        <span class="tag">Survival</span>
+        <span class="tag">Aventura</span>
+        <span class="tag">Multijugador</span>
+      </div>
+      <div class="map-meta">
+        <span>👤 por XCraftMaster</span>
+        <span>▶ 45,230 jugadas</span>
+      </div>
+      <button class="btn btn-purple">Ver Mapa</button>
+    </div>
+
+    <!-- Mapa 2 -->
+    <div class="card map-card">
+      <div class="map-thumbnail map-thumb-desert">🏜️</div>
+      <div class="map-info">
+        <div class="map-name">Desierto del Caos</div>
+        <div class="map-rating">★ 4.7</div>
+      </div>
+      <div class="map-tags">
+        <span class="tag">PvP</span>
+        <span class="tag">Arena</span>
+        <span class="tag">1v1</span>
+      </div>
+      <div class="map-meta">
+        <span>👤 por SandStorm99</span>
+        <span>▶ 38,900 jugadas</span>
+      </div>
+      <button class="btn btn-purple">Ver Mapa</button>
+    </div>
+
+    <!-- Mapa 3 -->
+    <div class="card map-card">
+      <div class="map-thumbnail map-thumb-space">🚀</div>
+      <div class="map-info">
+        <div class="map-name">Galaxia X-7</div>
+        <div class="map-rating">★ 4.8</div>
+      </div>
+      <div class="map-tags">
+        <span class="tag">Sci-Fi</span>
+        <span class="tag">Exploración</span>
+        <span class="tag">Cooperativo</span>
+      </div>
+      <div class="map-meta">
+        <span>👤 por NebulaCraft</span>
+        <span>▶ 52,100 jugadas</span>
+      </div>
+      <button class="btn btn-purple">Ver Mapa</button>
+    </div>
+
+    <!-- Mapa 4 -->
+    <div class="card map-card">
+      <div class="map-thumbnail map-thumb-ocean">🌊</div>
+      <div class="map-info">
+        <div class="map-name">Abismo Marino</div>
+        <div class="map-rating">★ 4.6</div>
+      </div>
+      <div class="map-tags">
+        <span class="tag">Underwater</span>
+        <span class="tag">Survival</span>
+        <span class="tag">Misterio</span>
+      </div>
+      <div class="map-meta">
+        <span>👤 por OceanBuilder</span>
+        <span>▶ 29,800 jugadas</span>
+      </div>
+      <button class="btn btn-purple">Ver Mapa</button>
+    </div>
+
+  </div>
+
+  <div style="text-align:center;margin-top:24px">
+    <button class="btn btn-purple" style="width:auto;padding:12px 40px" onclick="showToast('🗺️','Función de recomendar mapa próximamente...')">
+      + Recomendar un Mapa
+    </button>
+  </div>
+</section>
+
+<!-- SECTION: RANKING -->
+<div class="section-divider"></div>
+<section class="section" id="ranking">
+  <div class="section-header">
+    <div class="section-icon blue">🏆</div>
+    <div class="section-title">
+      <h2>RANKING GLOBAL</h2>
+      <p>Los mejores jugadores de la comunidad</p>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active">👑 Jugadores</button>
+    <button class="tab">⚔️ Clanes</button>
+    <button class="tab">🗺️ Creadores</button>
+  </div>
+
+  <div class="ranking-list">
+    <div class="rank-item">
+      <div class="rank-num">01</div>
+      <div class="rank-avatar">🐉</div>
+      <div class="rank-info">
+        <div class="rank-name">DragonSlayer_MX</div>
+        <div class="rank-sub">Clan: Dragones de Fuego • Nivel 99</div>
+      </div>
+      <div class="rank-score">48,920 <span>puntos totales</span></div>
+    </div>
+
+    <div class="rank-item">
+      <div class="rank-num">02</div>
+      <div class="rank-avatar">⚡</div>
+      <div class="rank-info">
+        <div class="rank-name">ElectroGamer777</div>
+        <div class="rank-sub">Clan: StarBuilders • Nivel 95</div>
+      </div>
+      <div class="rank-score">44,210 <span>puntos totales</span></div>
+    </div>
+
+    <div class="rank-item">
+      <div class="rank-num">03</div>
+      <div class="rank-avatar">🌙</div>
+      <div class="rank-info">
+        <div class="rank-name">LunaWarrior</div>
+        <div class="rank-sub">Sin clan • Nivel 91</div>
+      </div>
+      <div class="rank-score">41,880 <span>puntos totales</span></div>
+    </div>
+
+    <div class="rank-item">
+      <div class="rank-num">04</div>
+      <div class="rank-avatar">🔥</div>
+      <div class="rank-info">
+        <div class="rank-name">FireStrike_Pro</div>
+        <div class="rank-sub">Clan: Águilas Reales • Nivel 88</div>
+      </div>
+      <div class="rank-score">38,540 <span>puntos totales</span></div>
+    </div>
+
+    <div class="rank-item">
+      <div class="rank-num">05</div>
+      <div class="rank-avatar">💎</div>
+      <div class="rank-info">
+        <div class="rank-name">DiamondBuilder</div>
+        <div class="rank-sub">Clan: StarBuilders • Nivel 85</div>
+      </div>
+      <div class="rank-score">35,120 <span>puntos totales</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">MINI<span>WORLD</span> HUB</div>
+  <p>Hecho con ❤️ por y para la comunidad de Mini World</p>
+  <p style="margin-top:8px;font-size:0.8rem">No afiliado oficialmente con Mini World: Block Art</p>
+</footer>
+
+</main>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span class="toast-icon" id="toastIcon">✅</span>
+  <span class="toast-msg" id="toastMsg">¡Acción completada!</span>
+</div>
+
+<script>
+  // Animated counters
+  function animateCount(el, target, suffix='') {
+    let current = 0;
+    const increment = target / 60;
+    const timer = setInterval(() => {
+      current += increment;
+      if (current >= target) { current = target; clearInterval(timer); }
+      el.textContent = Math.floor(current).toLocaleString() + suffix;
+    }, 30);
+  }
+
+  setTimeout(() => {
+    animateCount(document.getElementById('countPlayers'), 24800);
+    animateCount(document.getElementById('countClans'), 342);
+    animateCount(document.getElementById('countMaps'), 1580);
+  }, 500);
+
+  // Modal
+  function openModal() {
+    document.getElementById('clanModal').classList.add('open');
+  }
+
+  function closeModal() {
+    document.getElementById('clanModal').classList.remove('open');
+  }
+
+  document.getElementById('clanModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+
+  // Emoji picker
+  function selectEmoji(el) {
+    document.querySelectorAll('.emoji-opt').forEach(e => e.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  // Create clan
+  function createClan() {
+    const name = document.getElementById('clanName').value;
+    const tag = document.getElementById('clanTag').value;
+    if (!name || !tag) {
+      showToast('⚠️', 'Completa el nombre y tag del clan', 'orange');
+      return;
+    }
+    const emoji = document.querySelector('.emoji-opt.selected').textContent;
+    closeModal();
+
+    // Add clan card dynamically
+    const grid = document.getElementById('clansGrid');
+    const card = document.createElement('div');
+    card.className = 'card clan-card';
+    card.innerHTML = `
+      <div class="clan-header">
+        <div class="clan-avatar active" style="background:rgba(0,255,136,0.1)">${emoji}</div>
+        <div>
+          <div class="clan-name">${name}</div>
+          <div class="clan-tag">[${tag.toUpperCase()}] • Nuevo</div>
+        </div>
+      </div>
+      <div class="clan-stats">
+        <div class="clan-stat"><div class="clan-stat-val">1</div><div class="clan-stat-label">Miembros</div></div>
+        <div class="clan-stat"><div class="clan-stat-val">--</div><div class="clan-stat-label">Win Rate</div></div>
+        <div class="clan-stat"><div class="clan-stat-val">Nuevo</div><div class="clan-stat-label">Ranking</div></div>
+      </div>
+      <p class="clan-desc">${document.getElementById('clanDesc').value || 'Clan recién fundado. ¡Únete y seamos los mejores!'}</p>
+      <button class="btn btn-green" onclick="showToast('⚔️','¡Ya eres fundador de este clan!')">Tu Clan ⚔️</button>
+    `;
+    grid.appendChild(card);
+    showToast('✅', `¡Clan "${name}" creado exitosamente!`);
+  }
+
+  // Report types
+  function selectReport(el) {
+    document.querySelectorAll('.report-type').forEach(r => r.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  // Submit report
+  function submitReport() {
+    showToast('🚨', '¡Reporte enviado! El equipo lo revisará pronto.');
+  }
+
+  // Tabs (visual only)
+  document.querySelectorAll('.tabs').forEach(tabGroup => {
+    tabGroup.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabGroup.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+      });
+    });
+  });
+
+  // Toast
+  function showToast(icon, msg, color = 'green') {
+    const toast = document.getElementById('toast');
+    document.getElementById('toastIcon').textContent = icon;
+    document.getElementById('toastMsg').textContent = msg;
+    toast.style.borderColor = color === 'orange' ? 'var(--neon-orange)' : 'var(--neon-green)';
+    document.getElementById('toastMsg').style.color = color === 'orange' ? 'var(--neon-orange)' : 'var(--neon-green)';
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3500);
+  }
+
+  // Nav smooth scroll
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      document.querySelector(a.getAttribute('href')).scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+</script>
+</body>
+</html>
