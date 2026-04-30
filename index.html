@@ -159,6 +159,17 @@
     box-shadow: 0 8px 25px rgba(0,207,255,0.4);
   }
 
+  .nav-btn-outline {
+    background: transparent;
+    border: 1px solid var(--neon-blue);
+    color: var(--text-main);
+  }
+
+  .nav-btn-outline:hover {
+    background: rgba(0,207,255,0.1);
+    box-shadow: 0 8px 25px rgba(0,207,255,0.2);
+  }
+
   /* ===== MAIN CONTENT ===== */
   main {
     position: relative;
@@ -630,6 +641,7 @@
   .map-thumb-desert { background: linear-gradient(135deg, #7a4a1a, #c4842e); }
   .map-thumb-space { background: linear-gradient(135deg, #1a1a4a, #2d2d8a); }
   .map-thumb-ocean { background: linear-gradient(135deg, #1a2a5a, #1a5a8a); }
+  .map-thumb-custom { background: linear-gradient(135deg, #2d1a4a, #5c2d8a); }
 
   .map-info { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
   .map-name { font-family: 'Orbitron', monospace; font-weight: 700; font-size: 0.95rem; }
@@ -758,7 +770,7 @@
     background: rgba(255,255,255,0.05);
   }
 
-  /* ===== MODAL ===== */
+  /* ===== MODALS ===== */
   .modal-overlay {
     position: fixed;
     inset: 0;
@@ -788,6 +800,17 @@
     box-shadow: 0 0 60px rgba(0,255,136,0.15);
     transform: scale(0.9);
     transition: transform 0.3s;
+    position: relative;
+  }
+  
+  .modal.login-modal {
+    border-color: var(--neon-blue);
+    box-shadow: 0 0 60px rgba(0,207,255,0.15);
+  }
+
+  .modal.map-modal {
+    border-color: var(--neon-purple);
+    box-shadow: 0 0 60px rgba(168,85,247,0.15);
   }
 
   .modal-overlay.open .modal { transform: scale(1); }
@@ -799,6 +822,9 @@
     margin-bottom: 8px;
     color: var(--neon-green);
   }
+
+  .login-modal .modal-title { color: var(--neon-blue); }
+  .map-modal .modal-title { color: var(--neon-purple); }
 
   .modal-sub {
     color: var(--text-muted);
@@ -818,7 +844,6 @@
   }
 
   .modal-close:hover { color: var(--text-main); }
-  .modal { position: relative; }
 
   .emoji-picker {
     display: flex;
@@ -939,10 +964,32 @@
 <div class="particle" style="left:85%;--dur:7s;--delay:5s;background:#ffd700;"></div>
 <div class="particle" style="left:92%;--dur:12s;--delay:0.5s;background:#ff6b35;"></div>
 
+<!-- MODAL INICIAR SESIÓN -->
+<div class="modal-overlay" id="loginModal">
+  <div class="modal login-modal">
+    <button class="modal-close" onclick="closeLoginModal()">✕</button>
+    <div class="modal-title">👤 Iniciar Sesión</div>
+    <p class="modal-sub">Usa la misma UID y contraseña que del juego</p>
+
+    <div class="form-group">
+      <label class="form-label">UID del Juego</label>
+      <input type="text" class="form-input" placeholder="Ej: 12345678" id="loginUid">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Contraseña</label>
+      <input type="password" class="form-input" placeholder="••••••••" id="loginPass">
+    </div>
+
+    <button class="btn btn-blue" onclick="doLogin()" style="font-size:1rem;padding:14px; margin-top: 10px;">
+      ENTRAR AL HUB
+    </button>
+  </div>
+</div>
+
 <!-- MODAL CREAR CLAN -->
 <div class="modal-overlay" id="clanModal">
   <div class="modal">
-    <button class="modal-close" onclick="closeModal()">✕</button>
+    <button class="modal-close" onclick="closeModal('clanModal')">✕</button>
     <div class="modal-title">⚔️ Crear Nuevo Clan</div>
     <p class="modal-sub">Funda tu clan y recluta guerreros de Mini World</p>
 
@@ -997,6 +1044,39 @@
   </div>
 </div>
 
+<!-- MODAL RECOMENDAR MAPA -->
+<div class="modal-overlay" id="mapModal">
+  <div class="modal map-modal">
+    <button class="modal-close" onclick="closeModal('mapModal')">✕</button>
+    <div class="modal-title">🗺️ Recomendar Mapa</div>
+    <p class="modal-sub">Comparte tu mapa favorito con toda la comunidad</p>
+
+    <div class="form-group">
+      <label class="form-label">Nombre del Mapa</label>
+      <input type="text" class="form-input" placeholder="Ej: Parkour Extremo" id="newMapName">
+    </div>
+    <div class="form-group">
+      <label class="form-label">UID del Creador</label>
+      <input type="text" class="form-input" placeholder="Ej: 12345678" id="newMapAuthor">
+    </div>
+    
+    <div class="form-group">
+      <label class="form-label">Categoría Principal</label>
+      <select class="form-select" id="newMapCategory">
+        <option value="Survival">🌲 Survival</option>
+        <option value="PvP">⚔️ PvP</option>
+        <option value="Aventura">🧭 Aventura</option>
+        <option value="Puzzle">🧩 Puzzle / Parkour</option>
+      </select>
+    </div>
+
+    <button class="btn btn-purple" onclick="recommendMap()" style="font-size:1rem;padding:14px; margin-top: 10px;">
+      ✨ RECOMENDAR MAPA
+    </button>
+  </div>
+</div>
+
+
 <!-- NAVBAR -->
 <nav>
   <div class="logo">
@@ -1009,7 +1089,10 @@
     <li><a href="#mapas">Mapas</a></li>
     <li><a href="#ranking">Ranking</a></li>
   </ul>
-  <button class="nav-btn" onclick="openModal()">+ Crear Clan</button>
+  <div style="display:flex; gap: 12px;">
+    <button class="nav-btn nav-btn-outline" onclick="openModal('loginModal')" id="userBtn">👤 Iniciar Sesión</button>
+    <button class="nav-btn" onclick="openModal('clanModal')">+ Crear Clan</button>
+  </div>
 </nav>
 
 <!-- HERO -->
@@ -1057,9 +1140,8 @@
   </div>
 
   <div class="clans-grid" id="clansGrid">
-
     <!-- Crear clan placeholder -->
-    <div class="card create-clan-card" onclick="openModal()">
+    <div class="card create-clan-card" onclick="openModal('clanModal')">
       <div class="plus-icon">＋</div>
       <p>CREAR NUEVO CLAN</p>
     </div>
@@ -1117,7 +1199,6 @@
       <p class="clan-desc">Ambiente relajado y amigable. Todos son bienvenidos, ¡aprendemos juntos!</p>
       <button class="btn btn-green">Unirse Ahora</button>
     </div>
-
   </div>
 </section>
 
@@ -1158,11 +1239,11 @@
     <div class="form-row">
       <div class="form-group" style="margin:0">
         <label class="form-label">Nombre del jugador</label>
-        <input type="text" class="form-input" placeholder="Nickname exacto...">
+        <input type="text" class="form-input" placeholder="Nickname exacto..." id="repPlayer">
       </div>
       <div class="form-group" style="margin:0">
         <label class="form-label">ID del servidor</label>
-        <input type="text" class="form-input" placeholder="Ej: MW-1234567">
+        <input type="text" class="form-input" placeholder="Ej: MW-1234567" id="repServer">
       </div>
     </div>
 
@@ -1170,17 +1251,17 @@
 
     <div class="form-group">
       <label class="form-label">Mapa / Sala donde ocurrió</label>
-      <input type="text" class="form-input" placeholder="Nombre del mapa o sala...">
+      <input type="text" class="form-input" placeholder="Nombre del mapa o sala..." id="repMap">
     </div>
 
     <div class="form-group">
       <label class="form-label">Descripción del problema</label>
-      <textarea class="form-textarea" placeholder="Describe detalladamente lo que pasó. Cuanta más información mejor..."></textarea>
+      <textarea class="form-textarea" placeholder="Describe detalladamente lo que pasó. Cuanta más información mejor..." id="repDesc"></textarea>
     </div>
 
     <div class="form-group">
       <label class="form-label">Evidencia (link de imagen/video)</label>
-      <input type="text" class="form-input" placeholder="https://...">
+      <input type="text" class="form-input" placeholder="https://..." id="repLink">
     </div>
 
     <button class="btn btn-orange" onclick="submitReport()" style="font-size:1rem;padding:14px;">
@@ -1208,7 +1289,7 @@
     <button class="tab">🌱 Survival</button>
   </div>
 
-  <div class="maps-grid">
+  <div class="maps-grid" id="mapsGrid">
 
     <!-- Mapa 1 -->
     <div class="card map-card">
@@ -1289,7 +1370,7 @@
   </div>
 
   <div style="text-align:center;margin-top:24px">
-    <button class="btn btn-purple" style="width:auto;padding:12px 40px" onclick="showToast('🗺️','Función de recomendar mapa próximamente...')">
+    <button class="btn btn-purple" style="width:auto;padding:12px 40px" onclick="openModal('mapModal')">
       + Recomendar un Mapa
     </button>
   </div>
@@ -1381,6 +1462,18 @@
 </div>
 
 <script>
+  // Al cargar la página, recuperar datos guardados en LocalStorage
+  document.addEventListener("DOMContentLoaded", () => {
+    loadSavedClans();
+    loadSavedMaps();
+    
+    // Check if user is logged in
+    const userUid = localStorage.getItem('mw_user_uid');
+    if(userUid) {
+      document.getElementById('userBtn').textContent = '👤 UID: ' + userUid;
+    }
+  });
+
   // Animated counters
   function animateCount(el, target, suffix='') {
     let current = 0;
@@ -1398,46 +1491,87 @@
     animateCount(document.getElementById('countMaps'), 1580);
   }, 500);
 
-  // Modal
-  function openModal() {
-    document.getElementById('clanModal').classList.add('open');
+  // Modals Controller
+  function openModal(modalId) {
+    document.getElementById(modalId).classList.add('open');
   }
 
-  function closeModal() {
-    document.getElementById('clanModal').classList.remove('open');
+  function closeModal(modalId) {
+    document.getElementById(modalId).classList.remove('open');
   }
 
-  document.getElementById('clanModal').addEventListener('click', function(e) {
-    if (e.target === this) closeModal();
+  // Cierra el modal si das click afuera
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', function(e) {
+      if (e.target === this) this.classList.remove('open');
+    });
   });
 
-  // Emoji picker
+  // Login Function
+  function doLogin() {
+    const uid = document.getElementById('loginUid').value;
+    const pass = document.getElementById('loginPass').value;
+    
+    if(!uid || !pass) {
+      showToast('⚠️', 'Por favor, ingresa tu UID y contraseña', 'orange');
+      return;
+    }
+    
+    // Guardar en localStorage
+    localStorage.setItem('mw_user_uid', uid);
+    
+    document.getElementById('userBtn').textContent = '👤 UID: ' + uid;
+    closeModal('loginModal');
+    showToast('✅', `¡Bienvenido al HUB, UID: ${uid}!`, 'blue');
+  }
+
+  // Emoji picker para Clanes
   function selectEmoji(el) {
     document.querySelectorAll('.emoji-opt').forEach(e => e.classList.remove('selected'));
     el.classList.add('selected');
   }
 
-  // Create clan
+  // Crear Clan y guardar en LocalStorage
   function createClan() {
     const name = document.getElementById('clanName').value;
     const tag = document.getElementById('clanTag').value;
+    const desc = document.getElementById('clanDesc').value || 'Clan recién fundado. ¡Únete y seamos los mejores!';
+    
     if (!name || !tag) {
       showToast('⚠️', 'Completa el nombre y tag del clan', 'orange');
       return;
     }
     const emoji = document.querySelector('.emoji-opt.selected').textContent;
-    closeModal();
+    
+    const newClan = { name, tag, emoji, desc };
+    
+    // Guardar en almacenamiento
+    const savedClans = JSON.parse(localStorage.getItem('mw_clans') || '[]');
+    savedClans.push(newClan);
+    localStorage.setItem('mw_clans', JSON.stringify(savedClans));
 
-    // Add clan card dynamically
+    closeModal('clanModal');
+    renderClanCard(newClan);
+    showToast('✅', `¡Clan "${name}" creado exitosamente!`);
+  }
+
+  // Cargar clanes guardados
+  function loadSavedClans() {
+    const savedClans = JSON.parse(localStorage.getItem('mw_clans') || '[]');
+    savedClans.forEach(clan => renderClanCard(clan));
+  }
+
+  // Renderizar Tarjeta de Clan
+  function renderClanCard(clan) {
     const grid = document.getElementById('clansGrid');
     const card = document.createElement('div');
     card.className = 'card clan-card';
     card.innerHTML = `
       <div class="clan-header">
-        <div class="clan-avatar active" style="background:rgba(0,255,136,0.1)">${emoji}</div>
+        <div class="clan-avatar active" style="background:rgba(0,255,136,0.1)">${clan.emoji}</div>
         <div>
-          <div class="clan-name">${name}</div>
-          <div class="clan-tag">[${tag.toUpperCase()}] • Nuevo</div>
+          <div class="clan-name">${clan.name}</div>
+          <div class="clan-tag">[${clan.tag.toUpperCase()}] • Nuevo</div>
         </div>
       </div>
       <div class="clan-stats">
@@ -1445,22 +1579,99 @@
         <div class="clan-stat"><div class="clan-stat-val">--</div><div class="clan-stat-label">Win Rate</div></div>
         <div class="clan-stat"><div class="clan-stat-val">Nuevo</div><div class="clan-stat-label">Ranking</div></div>
       </div>
-      <p class="clan-desc">${document.getElementById('clanDesc').value || 'Clan recién fundado. ¡Únete y seamos los mejores!'}</p>
+      <p class="clan-desc">${clan.desc}</p>
       <button class="btn btn-green" onclick="showToast('⚔️','¡Ya eres fundador de este clan!')">Tu Clan ⚔️</button>
     `;
     grid.appendChild(card);
-    showToast('✅', `¡Clan "${name}" creado exitosamente!`);
   }
 
-  // Report types
+  // Report types selector
   function selectReport(el) {
     document.querySelectorAll('.report-type').forEach(r => r.classList.remove('selected'));
     el.classList.add('selected');
   }
 
-  // Submit report
+  // Enviar Reporte y Guardar en LocalStorage
   function submitReport() {
-    showToast('🚨', '¡Reporte enviado! El equipo lo revisará pronto.');
+    const player = document.getElementById('repPlayer').value;
+    const server = document.getElementById('repServer').value;
+    const map = document.getElementById('repMap').value;
+    const desc = document.getElementById('repDesc').value;
+    const link = document.getElementById('repLink').value;
+    const type = document.querySelector('.report-type.selected').innerText.trim();
+
+    if(!player || !desc) {
+      showToast('⚠️', 'Ingresa el nombre del jugador y descripción', 'orange');
+      return;
+    }
+
+    const newReport = { player, server, map, desc, link, type, date: new Date().toLocaleDateString() };
+    
+    // Guardar
+    const savedReports = JSON.parse(localStorage.getItem('mw_reports') || '[]');
+    savedReports.push(newReport);
+    localStorage.setItem('mw_reports', JSON.stringify(savedReports));
+
+    // Limpiar campos
+    document.getElementById('repPlayer').value = '';
+    document.getElementById('repServer').value = '';
+    document.getElementById('repMap').value = '';
+    document.getElementById('repDesc').value = '';
+    document.getElementById('repLink').value = '';
+
+    showToast('🚨', '¡Reporte guardado! El equipo lo revisará pronto.', 'orange');
+  }
+
+  // Recomendar Mapa y Guardar en LocalStorage
+  function recommendMap() {
+    const name = document.getElementById('newMapName').value;
+    const author = document.getElementById('newMapAuthor').value;
+    const category = document.getElementById('newMapCategory').value;
+
+    if(!name || !author) {
+      showToast('⚠️', 'Ingresa el nombre del mapa y el autor', 'orange');
+      return;
+    }
+
+    const newMap = { name, author, category };
+    
+    const savedMaps = JSON.parse(localStorage.getItem('mw_maps') || '[]');
+    savedMaps.push(newMap);
+    localStorage.setItem('mw_maps', JSON.stringify(savedMaps));
+
+    closeModal('mapModal');
+    renderMapCard(newMap);
+    showToast('🗺️', `¡Mapa "${name}" recomendado a la comunidad!`, 'purple');
+  }
+
+  // Cargar mapas recomendados guardados
+  function loadSavedMaps() {
+    const savedMaps = JSON.parse(localStorage.getItem('mw_maps') || '[]');
+    savedMaps.forEach(map => renderMapCard(map));
+  }
+
+  // Renderizar Tarjeta de Mapa
+  function renderMapCard(map) {
+    const grid = document.getElementById('mapsGrid');
+    const card = document.createElement('div');
+    card.className = 'card map-card';
+    card.innerHTML = `
+      <div class="map-thumbnail map-thumb-custom">✨</div>
+      <div class="map-info">
+        <div class="map-name">${map.name}</div>
+        <div class="map-rating" style="color:var(--text-main)">★ Nuevo</div>
+      </div>
+      <div class="map-tags">
+        <span class="tag">${map.category}</span>
+        <span class="tag">Comunidad</span>
+      </div>
+      <div class="map-meta">
+        <span>👤 UID: ${map.author}</span>
+        <span>▶ 0 jugadas</span>
+      </div>
+      <button class="btn btn-purple">Ver Mapa</button>
+    `;
+    grid.appendChild(card);
   }
 
   // Tabs (visual only)
@@ -1478,8 +1689,15 @@
     const toast = document.getElementById('toast');
     document.getElementById('toastIcon').textContent = icon;
     document.getElementById('toastMsg').textContent = msg;
-    toast.style.borderColor = color === 'orange' ? 'var(--neon-orange)' : 'var(--neon-green)';
-    document.getElementById('toastMsg').style.color = color === 'orange' ? 'var(--neon-orange)' : 'var(--neon-green)';
+    
+    let borderColor = 'var(--neon-green)';
+    if(color === 'orange') borderColor = 'var(--neon-orange)';
+    if(color === 'blue') borderColor = 'var(--neon-blue)';
+    if(color === 'purple') borderColor = 'var(--neon-purple)';
+    
+    toast.style.borderColor = borderColor;
+    document.getElementById('toastMsg').style.color = borderColor;
+    
     toast.classList.add('show');
     setTimeout(() => toast.classList.remove('show'), 3500);
   }
