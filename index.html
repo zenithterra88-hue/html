@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mini World Hub — Centro de la Comunidad</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&family=Exo+2:wght@300;400;700&display=swap" rel="stylesheet">
+<!-- Google Identity Services -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
   :root {
     --neon-green: #00ff88;
@@ -159,15 +161,286 @@
     box-shadow: 0 8px 25px rgba(0,207,255,0.4);
   }
 
-  .nav-btn-outline {
-    background: transparent;
-    border: 1px solid var(--neon-blue);
+  /* ===== GOOGLE LOGIN BUTTON ===== */
+  .nav-google-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.15);
+    padding: 8px 16px;
+    border-radius: 6px;
     color: var(--text-main);
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    margin-left: 10px;
   }
 
-  .nav-btn-outline:hover {
+  .nav-google-btn:hover {
+    background: rgba(255,255,255,0.13);
+    border-color: var(--neon-blue);
+    box-shadow: var(--glow-blue);
+    transform: translateY(-2px);
+  }
+
+  .google-icon-svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+  }
+
+  /* ===== USER PROFILE DROPDOWN ===== */
+  .nav-profile {
+    position: relative;
+    display: none;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    margin-left: 10px;
+  }
+
+  .nav-profile.visible { display: flex; }
+
+  .profile-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 2px solid var(--neon-green);
+    box-shadow: var(--glow-green);
+    object-fit: cover;
+    transition: transform 0.3s;
+  }
+
+  .profile-avatar:hover { transform: scale(1.1); }
+
+  .profile-name {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--neon-green);
+    letter-spacing: 0.5px;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .profile-dropdown {
+    position: absolute;
+    top: calc(100% + 14px);
+    right: 0;
+    background: var(--card-bg);
+    border: 1px solid var(--neon-green);
+    border-radius: 14px;
+    padding: 8px;
+    min-width: 220px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.7), var(--glow-green);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-8px);
+    transition: all 0.25s;
+    z-index: 200;
+  }
+
+  .nav-profile:hover .profile-dropdown,
+  .nav-profile.open .profile-dropdown {
+    opacity: 1;
+    pointer-events: all;
+    transform: translateY(0);
+  }
+
+  .dropdown-header {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--card-border);
+    margin-bottom: 6px;
+  }
+
+  .dropdown-email {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    font-family: 'Exo 2', sans-serif;
+    margin-top: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    letter-spacing: 0.5px;
+  }
+
+  .dropdown-item:hover {
     background: rgba(0,207,255,0.1);
-    box-shadow: 0 8px 25px rgba(0,207,255,0.2);
+    color: var(--neon-blue);
+  }
+
+  .dropdown-item.danger:hover {
+    background: rgba(255,107,53,0.1);
+    color: var(--neon-orange);
+  }
+
+  /* ===== LOGIN MODAL ===== */
+  .login-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.88);
+    backdrop-filter: blur(14px);
+    z-index: 1100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+
+  .login-modal-overlay.open {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .login-modal {
+    background: var(--card-bg);
+    border: 1px solid var(--neon-blue);
+    border-radius: 24px;
+    padding: 44px 40px;
+    max-width: 420px;
+    width: 92%;
+    box-shadow: 0 0 80px rgba(0,207,255,0.18);
+    transform: scale(0.88);
+    transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+    text-align: center;
+    position: relative;
+  }
+
+  .login-modal-overlay.open .login-modal { transform: scale(1); }
+
+  .login-modal-close {
+    position: absolute;
+    top: 14px; right: 18px;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.4rem;
+    cursor: pointer;
+    transition: color 0.2s;
+    line-height: 1;
+  }
+
+  .login-modal-close:hover { color: var(--text-main); }
+
+  .login-modal-logo {
+    font-size: 3.2rem;
+    margin-bottom: 10px;
+    display: block;
+    animation: pulse-icon 2s infinite;
+  }
+
+  .login-modal-title {
+    font-family: 'Orbitron', monospace;
+    font-weight: 900;
+    font-size: 1.4rem;
+    margin-bottom: 6px;
+    background: linear-gradient(90deg, var(--neon-blue), var(--neon-green));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .login-modal-sub {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 30px;
+    line-height: 1.6;
+  }
+
+  .google-signin-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    padding: 14px 20px;
+    background: #fff;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.3s;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+
+  .google-signin-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(255,255,255,0.15);
+  }
+
+  .google-signin-btn:active { transform: translateY(0); }
+
+  .login-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-family: 'Rajdhani', sans-serif;
+  }
+
+  .login-divider::before, .login-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--card-border);
+  }
+
+  .login-features {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  .login-feature {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    padding: 10px 8px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-align: center;
+    letter-spacing: 0.3px;
+  }
+
+  .login-feature span {
+    display: block;
+    font-size: 1.3rem;
+    margin-bottom: 4px;
   }
 
   /* ===== MAIN CONTENT ===== */
@@ -641,7 +914,6 @@
   .map-thumb-desert { background: linear-gradient(135deg, #7a4a1a, #c4842e); }
   .map-thumb-space { background: linear-gradient(135deg, #1a1a4a, #2d2d8a); }
   .map-thumb-ocean { background: linear-gradient(135deg, #1a2a5a, #1a5a8a); }
-  .map-thumb-custom { background: linear-gradient(135deg, #2d1a4a, #5c2d8a); }
 
   .map-info { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
   .map-name { font-family: 'Orbitron', monospace; font-weight: 700; font-size: 0.95rem; }
@@ -770,7 +1042,7 @@
     background: rgba(255,255,255,0.05);
   }
 
-  /* ===== MODALS ===== */
+  /* ===== MODAL ===== */
   .modal-overlay {
     position: fixed;
     inset: 0;
@@ -800,17 +1072,6 @@
     box-shadow: 0 0 60px rgba(0,255,136,0.15);
     transform: scale(0.9);
     transition: transform 0.3s;
-    position: relative;
-  }
-  
-  .modal.login-modal {
-    border-color: var(--neon-blue);
-    box-shadow: 0 0 60px rgba(0,207,255,0.15);
-  }
-
-  .modal.map-modal {
-    border-color: var(--neon-purple);
-    box-shadow: 0 0 60px rgba(168,85,247,0.15);
   }
 
   .modal-overlay.open .modal { transform: scale(1); }
@@ -822,9 +1083,6 @@
     margin-bottom: 8px;
     color: var(--neon-green);
   }
-
-  .login-modal .modal-title { color: var(--neon-blue); }
-  .map-modal .modal-title { color: var(--neon-purple); }
 
   .modal-sub {
     color: var(--text-muted);
@@ -844,6 +1102,7 @@
   }
 
   .modal-close:hover { color: var(--text-main); }
+  .modal { position: relative; }
 
   .emoji-picker {
     display: flex;
@@ -964,32 +1223,39 @@
 <div class="particle" style="left:85%;--dur:7s;--delay:5s;background:#ffd700;"></div>
 <div class="particle" style="left:92%;--dur:12s;--delay:0.5s;background:#ff6b35;"></div>
 
-<!-- MODAL INICIAR SESIÓN -->
-<div class="modal-overlay" id="loginModal">
-  <div class="modal login-modal">
-    <button class="modal-close" onclick="closeLoginModal()">✕</button>
-    <div class="modal-title">👤 Iniciar Sesión</div>
-    <p class="modal-sub">Usa la misma UID y contraseña que del juego</p>
+<!-- MODAL LOGIN GOOGLE -->
+<div class="login-modal-overlay" id="loginModal">
+  <div class="login-modal">
+    <button class="login-modal-close" onclick="closeLoginModal()">✕</button>
+    <span class="login-modal-logo">🌍</span>
+    <div class="login-modal-title">MINI WORLD HUB</div>
+    <p class="login-modal-sub">Inicia sesión con Google para unirte a clanes, reportar jugadores y acceder a todas las funciones de la comunidad.</p>
 
-    <div class="form-group">
-      <label class="form-label">UID del Juego</label>
-      <input type="text" class="form-input" placeholder="Ej: 12345678" id="loginUid">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Contraseña</label>
-      <input type="password" class="form-input" placeholder="••••••••" id="loginPass">
-    </div>
-
-    <button class="btn btn-blue" onclick="doLogin()" style="font-size:1rem;padding:14px; margin-top: 10px;">
-      ENTRAR AL HUB
+    <button class="google-signin-btn" id="googleSignInBtn" onclick="handleGoogleSignIn()">
+      <svg class="google-icon-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+      </svg>
+      Continuar con Google
     </button>
+
+    <div class="login-divider">Beneficios de unirte</div>
+
+    <div class="login-features">
+      <div class="login-feature"><span>⚔️</span>Crear y unirte a clanes</div>
+      <div class="login-feature"><span>🏆</span>Aparecer en el ranking</div>
+      <div class="login-feature"><span>🚨</span>Reportar jugadores</div>
+      <div class="login-feature"><span>🗺️</span>Publicar mapas</div>
+    </div>
   </div>
 </div>
 
 <!-- MODAL CREAR CLAN -->
 <div class="modal-overlay" id="clanModal">
   <div class="modal">
-    <button class="modal-close" onclick="closeModal('clanModal')">✕</button>
+    <button class="modal-close" onclick="closeModal()">✕</button>
     <div class="modal-title">⚔️ Crear Nuevo Clan</div>
     <p class="modal-sub">Funda tu clan y recluta guerreros de Mini World</p>
 
@@ -1044,39 +1310,6 @@
   </div>
 </div>
 
-<!-- MODAL RECOMENDAR MAPA -->
-<div class="modal-overlay" id="mapModal">
-  <div class="modal map-modal">
-    <button class="modal-close" onclick="closeModal('mapModal')">✕</button>
-    <div class="modal-title">🗺️ Recomendar Mapa</div>
-    <p class="modal-sub">Comparte tu mapa favorito con toda la comunidad</p>
-
-    <div class="form-group">
-      <label class="form-label">Nombre del Mapa</label>
-      <input type="text" class="form-input" placeholder="Ej: Parkour Extremo" id="newMapName">
-    </div>
-    <div class="form-group">
-      <label class="form-label">UID del Creador</label>
-      <input type="text" class="form-input" placeholder="Ej: 12345678" id="newMapAuthor">
-    </div>
-    
-    <div class="form-group">
-      <label class="form-label">Categoría Principal</label>
-      <select class="form-select" id="newMapCategory">
-        <option value="Survival">🌲 Survival</option>
-        <option value="PvP">⚔️ PvP</option>
-        <option value="Aventura">🧭 Aventura</option>
-        <option value="Puzzle">🧩 Puzzle / Parkour</option>
-      </select>
-    </div>
-
-    <button class="btn btn-purple" onclick="recommendMap()" style="font-size:1rem;padding:14px; margin-top: 10px;">
-      ✨ RECOMENDAR MAPA
-    </button>
-  </div>
-</div>
-
-
 <!-- NAVBAR -->
 <nav>
   <div class="logo">
@@ -1089,9 +1322,42 @@
     <li><a href="#mapas">Mapas</a></li>
     <li><a href="#ranking">Ranking</a></li>
   </ul>
-  <div style="display:flex; gap: 12px;">
-    <button class="nav-btn nav-btn-outline" onclick="openModal('loginModal')" id="userBtn">👤 Iniciar Sesión</button>
-    <button class="nav-btn" onclick="openModal('clanModal')">+ Crear Clan</button>
+  <div class="nav-actions" style="display:flex;align-items:center;gap:8px;">
+    <button class="nav-btn" onclick="openModal()">+ Crear Clan</button>
+    <!-- Google Login Button (shown when logged out) -->
+    <button class="nav-google-btn" id="navLoginBtn" onclick="openLoginModal()">
+      <svg class="google-icon-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+      </svg>
+      Iniciar Sesión
+    </button>
+    <!-- User Profile (shown when logged in) -->
+    <div class="nav-profile" id="navProfile" onclick="toggleProfileDropdown()">
+      <img src="" alt="Avatar" class="profile-avatar" id="profileAvatar">
+      <span class="profile-name" id="profileName">Usuario</span>
+      <span style="color:var(--text-muted);font-size:0.7rem;">▾</span>
+      <div class="profile-dropdown" id="profileDropdown">
+        <div class="dropdown-header">
+          <div style="font-family:'Rajdhani',sans-serif;font-weight:700;color:var(--text-main);" id="dropdownName">Usuario</div>
+          <div class="dropdown-email" id="dropdownEmail">usuario@gmail.com</div>
+        </div>
+        <button class="dropdown-item" onclick="showToast('🏆','Perfil de jugador próximamente...')">
+          <span>🎮</span> Mi Perfil
+        </button>
+        <button class="dropdown-item" onclick="showToast('⚔️','Mis clanes próximamente...')">
+          <span>⚔️</span> Mis Clanes
+        </button>
+        <button class="dropdown-item" onclick="showToast('🗺️','Mis mapas próximamente...')">
+          <span>🗺️</span> Mis Mapas
+        </button>
+        <button class="dropdown-item danger" onclick="handleSignOut()">
+          <span>🚪</span> Cerrar Sesión
+        </button>
+      </div>
+    </div>
   </div>
 </nav>
 
@@ -1140,8 +1406,9 @@
   </div>
 
   <div class="clans-grid" id="clansGrid">
+
     <!-- Crear clan placeholder -->
-    <div class="card create-clan-card" onclick="openModal('clanModal')">
+    <div class="card create-clan-card" onclick="openModal()">
       <div class="plus-icon">＋</div>
       <p>CREAR NUEVO CLAN</p>
     </div>
@@ -1199,6 +1466,7 @@
       <p class="clan-desc">Ambiente relajado y amigable. Todos son bienvenidos, ¡aprendemos juntos!</p>
       <button class="btn btn-green">Unirse Ahora</button>
     </div>
+
   </div>
 </section>
 
@@ -1239,11 +1507,11 @@
     <div class="form-row">
       <div class="form-group" style="margin:0">
         <label class="form-label">Nombre del jugador</label>
-        <input type="text" class="form-input" placeholder="Nickname exacto..." id="repPlayer">
+        <input type="text" class="form-input" placeholder="Nickname exacto...">
       </div>
       <div class="form-group" style="margin:0">
         <label class="form-label">ID del servidor</label>
-        <input type="text" class="form-input" placeholder="Ej: MW-1234567" id="repServer">
+        <input type="text" class="form-input" placeholder="Ej: MW-1234567">
       </div>
     </div>
 
@@ -1251,17 +1519,17 @@
 
     <div class="form-group">
       <label class="form-label">Mapa / Sala donde ocurrió</label>
-      <input type="text" class="form-input" placeholder="Nombre del mapa o sala..." id="repMap">
+      <input type="text" class="form-input" placeholder="Nombre del mapa o sala...">
     </div>
 
     <div class="form-group">
       <label class="form-label">Descripción del problema</label>
-      <textarea class="form-textarea" placeholder="Describe detalladamente lo que pasó. Cuanta más información mejor..." id="repDesc"></textarea>
+      <textarea class="form-textarea" placeholder="Describe detalladamente lo que pasó. Cuanta más información mejor..."></textarea>
     </div>
 
     <div class="form-group">
       <label class="form-label">Evidencia (link de imagen/video)</label>
-      <input type="text" class="form-input" placeholder="https://..." id="repLink">
+      <input type="text" class="form-input" placeholder="https://...">
     </div>
 
     <button class="btn btn-orange" onclick="submitReport()" style="font-size:1rem;padding:14px;">
@@ -1289,7 +1557,7 @@
     <button class="tab">🌱 Survival</button>
   </div>
 
-  <div class="maps-grid" id="mapsGrid">
+  <div class="maps-grid">
 
     <!-- Mapa 1 -->
     <div class="card map-card">
@@ -1370,7 +1638,7 @@
   </div>
 
   <div style="text-align:center;margin-top:24px">
-    <button class="btn btn-purple" style="width:auto;padding:12px 40px" onclick="openModal('mapModal')">
+    <button class="btn btn-purple" style="width:auto;padding:12px 40px" onclick="showToast('🗺️','Función de recomendar mapa próximamente...')">
       + Recomendar un Mapa
     </button>
   </div>
@@ -1462,18 +1730,6 @@
 </div>
 
 <script>
-  // Al cargar la página, recuperar datos guardados en LocalStorage
-  document.addEventListener("DOMContentLoaded", () => {
-    loadSavedClans();
-    loadSavedMaps();
-    
-    // Check if user is logged in
-    const userUid = localStorage.getItem('mw_user_uid');
-    if(userUid) {
-      document.getElementById('userBtn').textContent = '👤 UID: ' + userUid;
-    }
-  });
-
   // Animated counters
   function animateCount(el, target, suffix='') {
     let current = 0;
@@ -1491,87 +1747,46 @@
     animateCount(document.getElementById('countMaps'), 1580);
   }, 500);
 
-  // Modals Controller
-  function openModal(modalId) {
-    document.getElementById(modalId).classList.add('open');
+  // Modal
+  function openModal() {
+    document.getElementById('clanModal').classList.add('open');
   }
 
-  function closeModal(modalId) {
-    document.getElementById(modalId).classList.remove('open');
+  function closeModal() {
+    document.getElementById('clanModal').classList.remove('open');
   }
 
-  // Cierra el modal si das click afuera
-  document.querySelectorAll('.modal-overlay').forEach(overlay => {
-    overlay.addEventListener('click', function(e) {
-      if (e.target === this) this.classList.remove('open');
-    });
+  document.getElementById('clanModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
   });
 
-  // Login Function
-  function doLogin() {
-    const uid = document.getElementById('loginUid').value;
-    const pass = document.getElementById('loginPass').value;
-    
-    if(!uid || !pass) {
-      showToast('⚠️', 'Por favor, ingresa tu UID y contraseña', 'orange');
-      return;
-    }
-    
-    // Guardar en localStorage
-    localStorage.setItem('mw_user_uid', uid);
-    
-    document.getElementById('userBtn').textContent = '👤 UID: ' + uid;
-    closeModal('loginModal');
-    showToast('✅', `¡Bienvenido al HUB, UID: ${uid}!`, 'blue');
-  }
-
-  // Emoji picker para Clanes
+  // Emoji picker
   function selectEmoji(el) {
     document.querySelectorAll('.emoji-opt').forEach(e => e.classList.remove('selected'));
     el.classList.add('selected');
   }
 
-  // Crear Clan y guardar en LocalStorage
+  // Create clan
   function createClan() {
     const name = document.getElementById('clanName').value;
     const tag = document.getElementById('clanTag').value;
-    const desc = document.getElementById('clanDesc').value || 'Clan recién fundado. ¡Únete y seamos los mejores!';
-    
     if (!name || !tag) {
       showToast('⚠️', 'Completa el nombre y tag del clan', 'orange');
       return;
     }
     const emoji = document.querySelector('.emoji-opt.selected').textContent;
-    
-    const newClan = { name, tag, emoji, desc };
-    
-    // Guardar en almacenamiento
-    const savedClans = JSON.parse(localStorage.getItem('mw_clans') || '[]');
-    savedClans.push(newClan);
-    localStorage.setItem('mw_clans', JSON.stringify(savedClans));
+    closeModal();
 
-    closeModal('clanModal');
-    renderClanCard(newClan);
-    showToast('✅', `¡Clan "${name}" creado exitosamente!`);
-  }
-
-  // Cargar clanes guardados
-  function loadSavedClans() {
-    const savedClans = JSON.parse(localStorage.getItem('mw_clans') || '[]');
-    savedClans.forEach(clan => renderClanCard(clan));
-  }
-
-  // Renderizar Tarjeta de Clan
-  function renderClanCard(clan) {
+    // Add clan card dynamically
     const grid = document.getElementById('clansGrid');
     const card = document.createElement('div');
     card.className = 'card clan-card';
     card.innerHTML = `
       <div class="clan-header">
-        <div class="clan-avatar active" style="background:rgba(0,255,136,0.1)">${clan.emoji}</div>
+        <div class="clan-avatar active" style="background:rgba(0,255,136,0.1)">${emoji}</div>
         <div>
-          <div class="clan-name">${clan.name}</div>
-          <div class="clan-tag">[${clan.tag.toUpperCase()}] • Nuevo</div>
+          <div class="clan-name">${name}</div>
+          <div class="clan-tag">[${tag.toUpperCase()}] • Nuevo</div>
         </div>
       </div>
       <div class="clan-stats">
@@ -1579,99 +1794,22 @@
         <div class="clan-stat"><div class="clan-stat-val">--</div><div class="clan-stat-label">Win Rate</div></div>
         <div class="clan-stat"><div class="clan-stat-val">Nuevo</div><div class="clan-stat-label">Ranking</div></div>
       </div>
-      <p class="clan-desc">${clan.desc}</p>
+      <p class="clan-desc">${document.getElementById('clanDesc').value || 'Clan recién fundado. ¡Únete y seamos los mejores!'}</p>
       <button class="btn btn-green" onclick="showToast('⚔️','¡Ya eres fundador de este clan!')">Tu Clan ⚔️</button>
     `;
     grid.appendChild(card);
+    showToast('✅', `¡Clan "${name}" creado exitosamente!`);
   }
 
-  // Report types selector
+  // Report types
   function selectReport(el) {
     document.querySelectorAll('.report-type').forEach(r => r.classList.remove('selected'));
     el.classList.add('selected');
   }
 
-  // Enviar Reporte y Guardar en LocalStorage
+  // Submit report
   function submitReport() {
-    const player = document.getElementById('repPlayer').value;
-    const server = document.getElementById('repServer').value;
-    const map = document.getElementById('repMap').value;
-    const desc = document.getElementById('repDesc').value;
-    const link = document.getElementById('repLink').value;
-    const type = document.querySelector('.report-type.selected').innerText.trim();
-
-    if(!player || !desc) {
-      showToast('⚠️', 'Ingresa el nombre del jugador y descripción', 'orange');
-      return;
-    }
-
-    const newReport = { player, server, map, desc, link, type, date: new Date().toLocaleDateString() };
-    
-    // Guardar
-    const savedReports = JSON.parse(localStorage.getItem('mw_reports') || '[]');
-    savedReports.push(newReport);
-    localStorage.setItem('mw_reports', JSON.stringify(savedReports));
-
-    // Limpiar campos
-    document.getElementById('repPlayer').value = '';
-    document.getElementById('repServer').value = '';
-    document.getElementById('repMap').value = '';
-    document.getElementById('repDesc').value = '';
-    document.getElementById('repLink').value = '';
-
-    showToast('🚨', '¡Reporte guardado! El equipo lo revisará pronto.', 'orange');
-  }
-
-  // Recomendar Mapa y Guardar en LocalStorage
-  function recommendMap() {
-    const name = document.getElementById('newMapName').value;
-    const author = document.getElementById('newMapAuthor').value;
-    const category = document.getElementById('newMapCategory').value;
-
-    if(!name || !author) {
-      showToast('⚠️', 'Ingresa el nombre del mapa y el autor', 'orange');
-      return;
-    }
-
-    const newMap = { name, author, category };
-    
-    const savedMaps = JSON.parse(localStorage.getItem('mw_maps') || '[]');
-    savedMaps.push(newMap);
-    localStorage.setItem('mw_maps', JSON.stringify(savedMaps));
-
-    closeModal('mapModal');
-    renderMapCard(newMap);
-    showToast('🗺️', `¡Mapa "${name}" recomendado a la comunidad!`, 'purple');
-  }
-
-  // Cargar mapas recomendados guardados
-  function loadSavedMaps() {
-    const savedMaps = JSON.parse(localStorage.getItem('mw_maps') || '[]');
-    savedMaps.forEach(map => renderMapCard(map));
-  }
-
-  // Renderizar Tarjeta de Mapa
-  function renderMapCard(map) {
-    const grid = document.getElementById('mapsGrid');
-    const card = document.createElement('div');
-    card.className = 'card map-card';
-    card.innerHTML = `
-      <div class="map-thumbnail map-thumb-custom">✨</div>
-      <div class="map-info">
-        <div class="map-name">${map.name}</div>
-        <div class="map-rating" style="color:var(--text-main)">★ Nuevo</div>
-      </div>
-      <div class="map-tags">
-        <span class="tag">${map.category}</span>
-        <span class="tag">Comunidad</span>
-      </div>
-      <div class="map-meta">
-        <span>👤 UID: ${map.author}</span>
-        <span>▶ 0 jugadas</span>
-      </div>
-      <button class="btn btn-purple">Ver Mapa</button>
-    `;
-    grid.appendChild(card);
+    showToast('🚨', '¡Reporte enviado! El equipo lo revisará pronto.');
   }
 
   // Tabs (visual only)
@@ -1689,15 +1827,8 @@
     const toast = document.getElementById('toast');
     document.getElementById('toastIcon').textContent = icon;
     document.getElementById('toastMsg').textContent = msg;
-    
-    let borderColor = 'var(--neon-green)';
-    if(color === 'orange') borderColor = 'var(--neon-orange)';
-    if(color === 'blue') borderColor = 'var(--neon-blue)';
-    if(color === 'purple') borderColor = 'var(--neon-purple)';
-    
-    toast.style.borderColor = borderColor;
-    document.getElementById('toastMsg').style.color = borderColor;
-    
+    toast.style.borderColor = color === 'orange' ? 'var(--neon-orange)' : 'var(--neon-green)';
+    document.getElementById('toastMsg').style.color = color === 'orange' ? 'var(--neon-orange)' : 'var(--neon-green)';
     toast.classList.add('show');
     setTimeout(() => toast.classList.remove('show'), 3500);
   }
@@ -1709,6 +1840,135 @@
       document.querySelector(a.getAttribute('href')).scrollIntoView({ behavior: 'smooth' });
     });
   });
+
+  // ===== GOOGLE SIGN-IN =====
+  // IMPORTANTE: Reemplaza 'TU_CLIENT_ID_AQUI' con tu Google OAuth Client ID.
+  // Obtenlo en: https://console.cloud.google.com/apis/credentials
+  const GOOGLE_CLIENT_ID = 'TU_CLIENT_ID_AQUI.apps.googleusercontent.com';
+
+  let currentUser = null;
+
+  // Inicializar Google Identity Services
+  window.addEventListener('load', () => {
+    if (typeof google !== 'undefined' && google.accounts) {
+      google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleCredentialResponse,
+        auto_select: false,
+        cancel_on_tap_outside: true,
+      });
+    }
+    // Restaurar sesión guardada
+    const saved = localStorage.getItem('mw_user');
+    if (saved) {
+      try { updateUILoggedIn(JSON.parse(saved)); } catch(e) { localStorage.removeItem('mw_user'); }
+    }
+  });
+
+  // Callback de Google (token JWT)
+  function handleCredentialResponse(response) {
+    const payload = parseJwt(response.credential);
+    const user = {
+      name: payload.name,
+      email: payload.email,
+      picture: payload.picture,
+      sub: payload.sub
+    };
+    localStorage.setItem('mw_user', JSON.stringify(user));
+    updateUILoggedIn(user);
+    closeLoginModal();
+    showToast('✅', `¡Bienvenido, ${user.name.split(' ')[0]}!`);
+  }
+
+  // Botón manual de Google dentro del modal
+  function handleGoogleSignIn() {
+    if (typeof google !== 'undefined' && google.accounts) {
+      google.accounts.id.prompt((notification) => {
+        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+          // Si One Tap no se muestra, usar renderizado de botón
+          showToast('⚠️', 'Activa las cookies de terceros o revisa tu Client ID de Google.');
+        }
+      });
+    } else {
+      // Demo sin Client ID real: simula un usuario
+      const demoUser = {
+        name: 'Mini World Player',
+        email: 'player@gmail.com',
+        picture: '',
+        sub: 'demo_' + Date.now()
+      };
+      localStorage.setItem('mw_user', JSON.stringify(demoUser));
+      updateUILoggedIn(demoUser);
+      closeLoginModal();
+      showToast('✅', '¡Bienvenido! (modo demo — configura tu Client ID para Google real)');
+    }
+  }
+
+  // Actualizar navbar al iniciar sesión
+  function updateUILoggedIn(user) {
+    currentUser = user;
+    document.getElementById('navLoginBtn').style.display = 'none';
+    const profile = document.getElementById('navProfile');
+    profile.classList.add('visible');
+    document.getElementById('profileName').textContent = user.name.split(' ')[0];
+    document.getElementById('dropdownName').textContent = user.name;
+    document.getElementById('dropdownEmail').textContent = user.email;
+    const avatar = document.getElementById('profileAvatar');
+    if (user.picture) {
+      avatar.src = user.picture;
+      avatar.style.display = 'block';
+    } else {
+      avatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=00ff88&color=050b14&bold=true&size=64`;
+    }
+  }
+
+  // Cerrar sesión
+  function handleSignOut() {
+    currentUser = null;
+    localStorage.removeItem('mw_user');
+    if (typeof google !== 'undefined' && google.accounts) {
+      google.accounts.id.disableAutoSelect();
+    }
+    document.getElementById('navLoginBtn').style.display = 'flex';
+    document.getElementById('navProfile').classList.remove('visible');
+    document.getElementById('profileDropdown').style.opacity = '0';
+    document.getElementById('navProfile').classList.remove('open');
+    showToast('🚪', '¡Sesión cerrada! Hasta pronto.', 'orange');
+  }
+
+  // Toggle dropdown perfil
+  function toggleProfileDropdown() {
+    document.getElementById('navProfile').classList.toggle('open');
+  }
+
+  // Cerrar dropdown al click fuera
+  document.addEventListener('click', (e) => {
+    const profile = document.getElementById('navProfile');
+    if (!profile.contains(e.target)) profile.classList.remove('open');
+  });
+
+  // Login Modal
+  function openLoginModal() {
+    document.getElementById('loginModal').classList.add('open');
+  }
+
+  function closeLoginModal() {
+    document.getElementById('loginModal').classList.remove('open');
+  }
+
+  document.getElementById('loginModal').addEventListener('click', function(e) {
+    if (e.target === this) closeLoginModal();
+  });
+
+  // Parsear JWT de Google
+  function parseJwt(token) {
+    try {
+      const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+      return JSON.parse(decodeURIComponent(atob(base64).split('').map(c =>
+        '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+      ).join('')));
+    } catch { return {}; }
+  }
 </script>
 </body>
 </html>
